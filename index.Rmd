@@ -1,0 +1,78 @@
+---
+title       : Vehicle Mileage prediction.
+subtitle    : Predicts mpg from horse power, num. of cylinders, and weight.
+author      : Damodar Panigrahi
+job         : Software/Data architect/developer
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [mathjax, quiz, bootstrap]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Executive Summary
+mtcars dataset is used. A bestfit model is discovered using regression analysis. Then, mpg (miles per gallon) is predicted for a set consisting of horse power, number of cylindres, and weight of the vehicle. The data is analyzed to find out interesting patterns. Number of cylinders, for example, has only 4, 6, or 8 cylinders.  
+
+### Analysis - Exploratory 
+Load data set 'mtcars', and peak at it.
+```{r echo=TRUE}
+set.seed(12345)      #A random number, used as a good practice, 
+data(mtcars)
+names(mtcars)
+```
+
+--- 
+### Analysis - Exploratory - continuing
+```{r results='hide'}
+summary(mtcars) #the output is suppressed, to comply with page limitations
+```
+``` {r echo=TRUE}
+head(mtcars,n=3)
+```
+Different Number of Cylinders:
+``` {r echo=TRUE}
+unique(mtcars$cyl)
+```
+The above information was used to restrict the input for number of cylinders in the Shiny UI. 
+
+---
+## Best Fit Model and Predict Function
+```{r echo=TRUE}
+#find the best regression model of MPG based on horsepower, number of cylinders, and weight
+modelFit <- lm(mpg ~ hp + cyl + wt, data=mtcars)
+print(modelFit)
+#predicts MPG based on horsepower, number of cylinders, and weight
+predictedMPG <- function(horsepower, numcylinders, weigth) {
+  modelFit$coefficients[1] + modelFit$coefficients[2] * horsepower + 
+    modelFit$coefficients[3] * numcylinders + modelFit$coefficients[4] * weigth
+}
+```
+
+---
+## Test for hp=200, num cyl=6, and weight=5000
+
+```{r echo=FALSE}
+predicted_mpg <- predictedMPG(200, 6, 5000/1000)
+#print(predicted_mpg)
+par(mfrow = c(1, 3))
+with(mtcars, plot(hp, mpg,
+                  xlab='Gross horsepower',
+                  ylab='Miles per Gallon (mpg)',
+                  main='mpg vs horsepower')
+     )
+points(200, predicted_mpg, col='blue', cex=5, type="o", pch=15)                 
+with(mtcars, plot(cyl, mpg,
+                  xlab='Number of cylinders',
+                  ylab='Miles per Gallon (mpg)',
+                  main='mpg vs num cylinders'
+                  )
+     )
+points(6, predicted_mpg, col='red', cex=5, type="o", pch=16)  
+with(mtcars, plot(wt, mpg,
+                  xlab='Weight (lb/1000)',
+                  ylab='Miles per Gallon (mpg)',
+                  main='mpg vs weight')
+     )
+points(5000/1000, predicted_mpg, col='gray', cex=5, type="o", pch=17)  
+```
